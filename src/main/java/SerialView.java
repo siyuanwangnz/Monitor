@@ -1,27 +1,56 @@
 import javax.swing.*;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import java.awt.*;
-import java.util.ArrayList;
 
 public class SerialView extends JPanel {
     private final JPanel north;
     private final JPanel west;
     private final JPanel centre;
     private final String name;
-    private final Port port;
+    private final PortCollection portCollection;
 
     public SerialView(String title) {
-        port = Port.getInstance();
+        portCollection = new PortCollection();
 
         name = "Serial " + title;
         setName(name);
 
         setLayout(new BorderLayout());
-        setOpaque(false);
 
         north = buildNorth();
-        west = buildWest();
         centre = buildCentre();
 
+        west = new JPanel();
+        west.setBorder(BorderFactory.createTitledBorder("Port"));
+        west.add(new JComboBox(new String[]{"NULL"}));
+
+        add(north, BorderLayout.NORTH);
+        add(west, BorderLayout.WEST);
+        add(centre, BorderLayout.CENTER);
+
+        portCollection.getPortList().addListDataListener(new ListDataListener() {
+
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+                refreshComDisplay();
+            }
+
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+                refreshComDisplay();
+            }
+
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                refreshComDisplay();
+            }
+        });
+    }
+
+    private void refreshComDisplay() {
+        west.removeAll();
+        buildWest();
         add(north, BorderLayout.NORTH);
         add(west, BorderLayout.WEST);
         add(centre, BorderLayout.CENTER);
@@ -40,23 +69,19 @@ public class SerialView extends JPanel {
         return panel;
     }
 
-    private JPanel buildWest() {
-        JPanel panel = new JPanel();
-        panel.setBorder(BorderFactory.createTitledBorder("Port"));
-
+    private void buildWest() {
         JComboBox comboBox = new JComboBox();
-        ArrayList<String> portList = port.findPort();
-        if (portList != null || portList.size() > 0)
-        {
-            for (String com : port.findPort()) {
-                comboBox.addItem(com);
+
+        DefaultListModel list = portCollection.getPortList();
+        if (list != null || list.size() > 0) {
+            for (int i = 0; i < list.getSize(); i++) {
+                Object element = list.getElementAt(i);
+                comboBox.addItem(element.toString());
             }
         }
         comboBox.addItem("NULL");
 
-        panel.add(comboBox);
-
-        return panel;
+        west.add(comboBox);
     }
 
     private JPanel buildCentre() {
