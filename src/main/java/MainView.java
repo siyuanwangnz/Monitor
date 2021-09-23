@@ -2,13 +2,12 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MainView {
-    public static void main(String[] args) {
-        new MainView();
-    }
-
     private JFrame main;
+    private String title;
 
-    public MainView() {
+    public MainView(String title) {
+        this.title = title;
+
         main = new JFrame();
 
         DefaultListModel<JPanel> viewList = new DefaultListModel<>();
@@ -21,7 +20,7 @@ public class MainView {
     }
 
     private void mainConfig() {
-        main.setTitle("Monitor");
+        main.setTitle(title);
         main.setBounds(500, 300, 600, 500);
         main.setResizable(false);
         main.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

@@ -11,6 +11,7 @@
     <properties>
         <maven.compiler.source>7</maven.compiler.source>
         <maven.compiler.target>7</maven.compiler.target>
+        <syft.deploy.dir>${project.build.directory}</syft.deploy.dir>
     </properties>
 
     <dependencies>
@@ -28,5 +29,56 @@
         </dependency>
     </dependencies>
 
+    <build>
 
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-rxtx-dll</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.rxtx</groupId>
+                                    <artifactId>rxtx-serial-dll</artifactId>
+                                    <version>2.1.7</version>
+                                    <type>zip</type>
+                                    <overWrite>false</overWrite>
+                                    <outputDirectory>${syft.deploy.dir}</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                            <includes>rxtxSerial.dll</includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${syft.deploy.dir}</outputDirectory>
+                            <includeScope>runtime</includeScope>
+                            <stripVersion>true</stripVersion>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+    </build>
+
+    <repositories>
+        <repository>
+            <id>syft-nexus</id>
+            <name>Syft Nexus</name>
+            <url>http://syft-sw-build:8081/repository/syft</url>
+        </repository>
+    </repositories>
 </project>

@@ -23,6 +23,13 @@ public class Port {
         return instance;
     }
 
+    private SerialPort serialPort;
+
+    //get current port name
+    public String getPortName() {
+        return serialPort != null ? serialPort.getName() : "NULL COM CONNECT";
+    }
+
     //get port list
     public final ArrayList<String> findPort() {
         Enumeration<CommPortIdentifier> portList = CommPortIdentifier.getPortIdentifiers();
@@ -38,33 +45,35 @@ public class Port {
     }
 
     //open
-    public final SerialPort openPort(String portName, int baudrate) throws PortInUseException {
+    public final void openPort(String portName, int baudrate) {
 
         try {
             CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
 
-            CommPort commPort = portIdentifier.open(portName, 2000);
+            CommPort commPort = null;
+            try {
+                commPort = portIdentifier.open(portName, 2000);
+            } catch (PortInUseException e) {
+                e.printStackTrace();
+            }
 
             if (commPort instanceof SerialPort) {
 
-                SerialPort serialPort = (SerialPort) commPort;
+                serialPort = (SerialPort) commPort;
 
                 try {
                     serialPort.setSerialPortParams(baudrate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
                 } catch (UnsupportedCommOperationException e) {
                     e.printStackTrace();
                 }
-
-                return serialPort;
             }
         } catch (NoSuchPortException e) {
             e.printStackTrace();
         }
-        return null;
     }
 
     //close
-    public void closePort(SerialPort serialPort) {
+    public void closePort() {
         if (serialPort != null) {
             serialPort.close();
             serialPort = null;
@@ -72,8 +81,10 @@ public class Port {
     }
 
     //send
-    public void sendToPort(SerialPort serialPort, byte[] order) {
-
+    public void sendToPort(byte[] order) {
+        if (serialPort == null) {
+            return;
+        }
         OutputStream out = null;
 
         try {
@@ -97,10 +108,12 @@ public class Port {
     }
 
     //read
-    public byte[] readFromPort(SerialPort serialPort) {
-
+    public byte[] readFromPort() {
         InputStream in = null;
         byte[] bytes = null;
+        if (serialPort == null) {
+            return bytes;
+        }
 
         try {
 
@@ -128,12 +141,14 @@ public class Port {
     }
 
     //listener
-    public void addListener(SerialPort port, SerialPortEventListener listener) {
-
+    public void addListener(SerialPortEventListener listener) {
+        if (serialPort == null) {
+            return;
+        }
         try {
-            port.addEventListener(listener);
-            port.notifyOnDataAvailable(true);
-            port.notifyOnBreakInterrupt(true);
+            serialPort.addEventListener(listener);
+            serialPort.notifyOnDataAvailable(true);
+            serialPort.notifyOnBreakInterrupt(true);
 
         } catch (TooManyListenersException e) {
             e.printStackTrace();
