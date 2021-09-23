@@ -77,15 +77,34 @@ public class SerialView extends JPanel {
             }
         });
 
+        JCheckBox checkBox = new JCheckBox("+ CR LF");
+        checkBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JCheckBox cb = (JCheckBox) e.getSource();
+                if (cb.isSelected()) {
+                    portCollection.setEnableEOL(true);
+                    System.out.println("+EOL Enable");
+                } else {
+                    portCollection.setEnableEOL(false);
+                    System.out.println("+EOL Disable");
+                }
+            }
+        });
+
         listenable.addListener(new Consumer<String>() {
             @Override
             public void accept(String s) {
-                textArea.append(s);
+                textArea.append(portCollection.getEOL() + s);
             }
         });
 
         panel.add(new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.NORTH);
-        panel.add(btnClear, BorderLayout.SOUTH);
+
+        JPanel sPanel = new JPanel();
+        sPanel.add(btnClear);
+        sPanel.add(checkBox);
+        panel.add(sPanel, BorderLayout.EAST);
 
         return panel;
     }
