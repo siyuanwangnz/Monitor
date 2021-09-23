@@ -1,6 +1,4 @@
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import java.awt.*;
@@ -15,6 +13,7 @@ public class SerialView extends JPanel {
     private final JPanel centre;
     private final String name;
     private final PortCollection portCollection;
+    private Listenable<String> listenable = new Listenable<>();
 
     public SerialView(String title) {
         portCollection = new PortCollection();
@@ -78,6 +77,12 @@ public class SerialView extends JPanel {
             }
         });
 
+        listenable.addListener(new Consumer<String>() {
+            @Override
+            public void accept(String s) {
+                textArea.append(s);
+            }
+        });
 
         panel.add(new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.NORTH);
         panel.add(btnClear, BorderLayout.SOUTH);
@@ -102,11 +107,22 @@ public class SerialView extends JPanel {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     if (e.getItem().toString() == "NULL") {
+                        //close port
                         portCollection.getPort().closePort();
                         System.out.println(portCollection.getPort().getPortName());
                     } else {
+                        //open port
                         portCollection.getPort().openPort(e.getItem().toString(), 115200);
                         System.out.println(portCollection.getPort().getPortName());
+                        //add listener
+                        portCollection.getPort().addListener(new Port.DataAvailableListener() {
+                            @Override
+                            public void dataAvailable() {
+                                byte[] data = portCollection.getPort().readFromPort();
+                                listenable.setValue(new String(data));
+                                System.out.println(new String(data));
+                            }
+                        });
                     }
                 }
             }
@@ -127,10 +143,10 @@ public class SerialView extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JCheckBox cb = (JCheckBox) e.getSource();
-                if(cb.isSelected()){
+                if (cb.isSelected()) {
                     portCollection.setEnableEOL(true);
                     System.out.println("+EOL Enable");
-                }else{
+                } else {
                     portCollection.setEnableEOL(false);
                     System.out.println("+EOL Disable");
                 }
@@ -162,5 +178,26 @@ public class SerialView extends JPanel {
 
 
         return panel;
+    }
+
+    private class Listenable<E> {
+        private E value;
+
+        private Consumer<E> consumer;
+
+        public void addListener(Consumer<E> consumer) {
+            this.consumer = consumer;
+        }
+
+        public void setValue(E value) {
+            this.value = value;
+            if (consumer != null) {
+                consumer.accept(value);
+            }
+        }
+    }
+
+    public interface Consumer<T> {
+        void accept(T t);
     }
 }

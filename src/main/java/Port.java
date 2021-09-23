@@ -141,18 +141,62 @@ public class Port {
     }
 
     //listener
-    public void addListener(SerialPortEventListener listener) {
+    public void addListener(DataAvailableListener availableListener) {
         if (serialPort == null) {
             return;
         }
         try {
-            serialPort.addEventListener(listener);
+            serialPort.addEventListener(new SerialListener(availableListener));
             serialPort.notifyOnDataAvailable(true);
             serialPort.notifyOnBreakInterrupt(true);
 
         } catch (TooManyListenersException e) {
             e.printStackTrace();
         }
+    }
+
+    private class SerialListener implements SerialPortEventListener {
+
+        private DataAvailableListener availableListener;
+
+        public SerialListener(DataAvailableListener availableListener) {
+            this.availableListener = availableListener;
+        }
+
+        public void serialEvent(SerialPortEvent serialPortEvent) {
+
+            switch (serialPortEvent.getEventType()) {
+
+                case SerialPortEvent.BI:
+
+                case SerialPortEvent.OE:
+
+                case SerialPortEvent.FE:
+
+                case SerialPortEvent.PE:
+
+                case SerialPortEvent.CD:
+
+                case SerialPortEvent.CTS:
+
+                case SerialPortEvent.DSR:
+
+                case SerialPortEvent.RI:
+
+                case SerialPortEvent.OUTPUT_BUFFER_EMPTY:
+                    break;
+
+                case SerialPortEvent.DATA_AVAILABLE:
+                    if (availableListener != null) {
+                        availableListener.dataAvailable();
+                    }
+                    break;
+            }
+        }
+    }
+
+    public interface DataAvailableListener {
+        void dataAvailable();
     }
 
 }

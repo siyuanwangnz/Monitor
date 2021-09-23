@@ -57,7 +57,7 @@ public class PortCollection {
 
                     if (!portList.contains(obj)) portList.addElement(obj);
                 }
-                //delete unavaiable com
+                //delete unavailable com
                 en = portList.elements();
                 while (en.hasMoreElements()) {
                     Object obj = en.nextElement();
