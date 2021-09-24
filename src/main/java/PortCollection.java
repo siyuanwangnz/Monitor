@@ -7,8 +7,6 @@ import java.util.TimerTask;
 public class PortCollection {
     private Port port;
     private DefaultListModel portList = new DefaultListModel();
-    private static String EOL = "\r\n";
-    private boolean enableEOL = false;
 
     public PortCollection() {
         port = Port.getInstance();
@@ -23,19 +21,6 @@ public class PortCollection {
 
     public Port getPort() {
         return port;
-    }
-
-    public void setEnableEOL(boolean enable) {
-        enableEOL = enable;
-    }
-
-    public String getEOL() {
-        if (enableEOL) {
-            return EOL;
-        } else {
-            return "";
-        }
-
     }
 
     private class PingerTask extends TimerTask {

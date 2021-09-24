@@ -62,10 +62,12 @@ public class SerialView extends JPanel {
     }
 
     private JPanel buildNorth() {
+        final Device device = new Device();
+
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Received Message"));
 
-        final JTextArea textArea = new JTextArea(20, 51);
+        final JTextArea textArea = new JTextArea(19, 51);
         textArea.setLineWrap(true);
         textArea.setEditable(false);
 
@@ -83,10 +85,10 @@ public class SerialView extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox cb = (JCheckBox) e.getSource();
                 if (cb.isSelected()) {
-                    portCollection.setEnableEOL(true);
+                    device.setEnableEOL(true);
                     System.out.println("+EOL Enable");
                 } else {
-                    portCollection.setEnableEOL(false);
+                    device.setEnableEOL(false);
                     System.out.println("+EOL Disable");
                 }
             }
@@ -95,15 +97,16 @@ public class SerialView extends JPanel {
         listenable.addListener(new Consumer<String>() {
             @Override
             public void accept(String s) {
-                textArea.append(portCollection.getEOL() + s);
+                textArea.append(device.getEOL() + s);
+                textArea.setCaretPosition(textArea.getText().length());
             }
         });
 
         panel.add(new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.NORTH);
 
         JPanel sPanel = new JPanel();
-        sPanel.add(btnClear);
         sPanel.add(checkBox);
+        sPanel.add(btnClear);
         panel.add(sPanel, BorderLayout.EAST);
 
         return panel;
@@ -151,11 +154,52 @@ public class SerialView extends JPanel {
     }
 
     private JPanel buildCentre() {
+        final JPanel Panel = new JPanel();
+        Panel.setLayout(null);
+        final TabView tabView = new TabView();
+
+        JButton btnAdd = new JButton("+");
+        JButton btnRemove = new JButton("-");
+        btnAdd.setBounds(400, 3, 50, 15);
+        btnRemove.setBounds(450, 3, 50, 15);
+        btnAdd.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tabView.addView(buildTab("Send " + tabView.getNextViewNum().toString()));
+                tabView.tabConfig(Panel, 0, 0, 500, 70);
+                System.out.println("add");
+                repaint();
+            }
+        });
+        btnRemove.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                tabView.removeView();
+                tabView.tabConfig(Panel, 0, 0, 500, 70);
+                System.out.println("remove");
+                repaint();
+            }
+        });
+
+
+        Panel.add(btnAdd);
+        Panel.add(btnRemove);
+
+
+        tabView.addView(buildTab("Send 1"));
+        tabView.tabConfig(Panel, 0, 0, 500, 70);
+
+        return Panel;
+    }
+
+    private JPanel buildTab(String title) {
+        final Device device = new Device();
+
         JPanel panel = new JPanel();
-        panel.setBorder(BorderFactory.createTitledBorder("Send Message"));
+        panel.setName(title);
 
         final JTextField textField = new JFormattedTextField();
-        textField.setColumns(25);
+        textField.setColumns(23);
 
         JCheckBox checkBox = new JCheckBox("+ CR LF");
         checkBox.addActionListener(new ActionListener() {
@@ -163,10 +207,10 @@ public class SerialView extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 JCheckBox cb = (JCheckBox) e.getSource();
                 if (cb.isSelected()) {
-                    portCollection.setEnableEOL(true);
+                    device.setEnableEOL(true);
                     System.out.println("+EOL Enable");
                 } else {
-                    portCollection.setEnableEOL(false);
+                    device.setEnableEOL(false);
                     System.out.println("+EOL Disable");
                 }
             }
@@ -176,7 +220,7 @@ public class SerialView extends JPanel {
         btnSend.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String data = textField.getText().toString() + portCollection.getEOL();
+                String data = textField.getText().toString() + device.getEOL();
                 portCollection.getPort().sendToPort(data.getBytes());
                 System.out.println(data);
             }
@@ -194,7 +238,6 @@ public class SerialView extends JPanel {
         panel.add(checkBox);
         panel.add(btnSend);
         panel.add(btnClear);
-
 
         return panel;
     }

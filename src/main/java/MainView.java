@@ -1,9 +1,12 @@
+import javafx.scene.control.Tab;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class MainView {
     private JFrame main;
     private String title;
+    private TabView tabView;
 
     public MainView(String title) {
         this.title = title;
@@ -15,7 +18,9 @@ public class MainView {
         viewList.addElement(new SerialView("1"));
         viewList.addElement(new SerialView("2"));
 
-        tabConfig(viewList);
+        tabView = new TabView(viewList);
+        tabView.tabConfig(main);
+
         mainConfig();
     }
 
@@ -25,14 +30,5 @@ public class MainView {
         main.setResizable(false);
         main.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         main.setVisible(true);
-    }
-
-    private void tabConfig(DefaultListModel<JPanel> viewList) {
-        JTabbedPane tab = new JTabbedPane();
-        for (int i = 0; i < viewList.getSize(); i++) {
-            JPanel view = (JPanel) viewList.getElementAt(i);
-            tab.addTab(view.getName(), view);
-        }
-        main.add(tab, BorderLayout.CENTER);
     }
 }
