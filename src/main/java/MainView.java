@@ -16,6 +16,7 @@ public class MainView {
         DefaultListModel<JPanel> viewList = new DefaultListModel<>();
 
         viewList.addElement(new SerialView("1"));
+        viewList.addElement(new TestView("Test"));
 
         tabView = new TabView(viewList);
         tabView.tabConfig(main);
