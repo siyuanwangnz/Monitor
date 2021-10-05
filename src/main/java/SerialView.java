@@ -93,11 +93,12 @@ public class SerialView extends JPanel {
                 }
             }
         });
+        checkBox.setSelected(true);
 
-        listenable.addListener(new Consumer<String>() {
+        listenable.setListener(new Consumer<String>() {
             @Override
             public void accept(String s) {
-                textArea.append(device.getEOL() + s);
+                textArea.append(s + device.getEOL());
                 textArea.setCaretPosition(textArea.getText().length());
             }
         });
@@ -215,6 +216,7 @@ public class SerialView extends JPanel {
                 }
             }
         });
+        checkBox.setSelected(true);
 
         JButton btnSend = new JButton("Send");
         btnSend.addActionListener(new ActionListener() {
@@ -247,7 +249,7 @@ public class SerialView extends JPanel {
 
         private Consumer<E> consumer;
 
-        public void addListener(Consumer<E> consumer) {
+        public void setListener(Consumer<E> consumer) {
             this.consumer = consumer;
         }
 

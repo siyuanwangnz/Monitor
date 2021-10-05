@@ -17,17 +17,18 @@ public class TestView extends JPanel {
         Gbc gbc = new Gbc();
         gbc.insets = Gbc.INSET5;
 
-        panelMain.add(LineChreation("Prop1"),gbc.nextRow());
-        panelMain.add(LineChreation("Prop2"),gbc.nextRow());
+        panelMain.add(LineCreation("Prop1"),gbc.nextRow());
+        panelMain.add(LineCreation("Prop2"),gbc.nextRow());
 
 
         return panelMain;
     }
 
-    private JPanel LineChreation(String name) {
+    private JPanel LineCreation(String name) {
         JPanel panel = new JPanel(new FlowLayout());
 
-        panel.add(new JLabel(name + ": "));
+        String tmp  = String.format( "%s%d", name ,0);
+        panel.add(new JLabel(tmp + ": "));
 
         ButtonGroup buttonGroup = new ButtonGroup();
         JRadioButton btn1 = new JRadioButton("off");

@@ -1,6 +1,6 @@
 public class Device {
     private static String EOL = "\r\n";
-    private boolean enableEOL = false;
+    private boolean enableEOL = true;
 
     public void setEnableEOL(boolean enable) {
         enableEOL = enable;
