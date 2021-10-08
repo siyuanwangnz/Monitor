@@ -1,3 +1,5 @@
+package main.java;
+
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.util.HashMap;

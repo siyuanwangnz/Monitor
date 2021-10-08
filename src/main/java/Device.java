@@ -1,3 +1,5 @@
+package main.java;
+
 public class Device {
     private static String EOL = "\r\n";
     private boolean enableEOL = true;

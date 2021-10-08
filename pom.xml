@@ -12,6 +12,20 @@
         <maven.compiler.source>7</maven.compiler.source>
         <maven.compiler.target>7</maven.compiler.target>
         <syft.deploy.dir>${project.build.directory}</syft.deploy.dir>
+        <!-- Build properties-->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.compile.version>1.7</java.compile.version>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+        <timestamp>${maven.build.timestamp}</timestamp>
+
+        <tool.root>c:/sde</tool.root>
+        <!-- Default build dirs -->
+        <syft.jar.dir>${project.build.directory}/lib</syft.jar.dir><!-- Default build dirs -->
+        <syft.deploy.dir>${project.build.directory}/build/deploy</syft.deploy.dir>
+        <syft.publish.lib.dir>c:/sde/syft/${project.artifactId}</syft.publish.lib.dir>
+        <syft.keystore.name>${project.build.directory}/keystore</syft.keystore.name>
+        <syft.keystore.storepass>password</syft.keystore.storepass>
+        <syft.keystore.alias>syft</syft.keystore.alias>
     </properties>
 
     <dependencies>
@@ -31,7 +45,151 @@
 
     <build>
 
+        <sourceDirectory>./src</sourceDirectory>
+
+        <resources>
+            <resource>
+                <directory>${project.build.sourceDirectory}</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+                <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>${project.build.testSourceDirectory}</directory>
+                <targetPath>${project.build.testOutputDirectory}</targetPath>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
+
+            <!-- Compilation -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.6.1</version>
+                <configuration>
+                    <source>${java.compile.version}</source>
+                    <target>${java.compile.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src_legacy</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Checkstyle -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>2.17</version>
+                <configuration>
+                    <configLocation>build/checkstyle.xml</configLocation> <!-- only searches for 'fixme:' in the code  -->
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.7.9</version>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--Custom build opearations -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+
+                    <!-- Rename rxtx  This makes Maven builds of LabSyft
+                             more familiar to people doing product support. -->
+                    <execution>
+                        <id>massage-library-jarfiles</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target name="massage-library-jarfiles">
+                                <echo message="Renaming library JAR files..." />
+                                <move file="${syft.deploy.dir}/lib/rxtx.jar" tofile="${syft.deploy.dir}/lib/RXTXcomm.jar" />
+                            </target>
+                        </configuration>
+                    </execution>
+                    <!-- Copy the Syft jars for publishing, renaming them to have the
+                             same names as in the old Anthill builds -->
+                    <execution>
+                        <id>copy-rename-syft-jarfiles</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target name="copy-rename-syft-jarfiles">
+                                <echo message="Copying and renaming Syft JAR files..." />
+                                <copy todir="${syft.deploy.dir}/lib/">
+                                    <fileset dir="${syft.jar.dir}">
+                                        <include name="${project.build.finalName}-*.jar" />
+                                    </fileset>
+                                    <mapper type="glob" from="${project.build.finalName}-*" to="*" />
+                                </copy>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <!-- build installer -->
+                    <execution>
+                        <id>build-installer</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target name="build-installer">
+                                <property name="install4j.lib" value="${tool.root}/install4j/bin/ant.jar" />
+                                <taskdef name="install4j" classname="com.install4j.Install4JTask" classpath="${install4j.lib}" />
+                                <install4j projectfile="monitor.install4j" verbose="true" release="${project.version}" />
+                                <move file="${project.basedir}/monitor-${project.version}.exe" tofile="${project.build.directory}/monitor-${project.version}.exe" />
+                                <move file="${project.basedir}/updates.xml" tofile="${project.build.directory}/updates.xml" />
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Copy dependencies to lib dir -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -63,13 +221,99 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${syft.deploy.dir}</outputDirectory>
+                            <outputDirectory>${syft.deploy.dir}/lib</outputDirectory>
                             <includeScope>runtime</includeScope>
                             <stripVersion>true</stripVersion>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- build jars-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
+                <configuration>
+                    <outputDirectory>${syft.jar.dir}</outputDirectory>
+                    <archive>
+                        <manifestEntries>
+                            <Vendor>Syft Technologies Limited</Vendor>
+                            <Vendor-Url>http://www.syft.com</Vendor-Url>
+                            <Vendor-Email>mailto:support@syft.com</Vendor-Email>
+                            <Vendor-Address-1>3 Craft Place, Middleton, PO Box 28149</Vendor-Address-1>
+                            <Vendor-Address-2>Christchurch, New Zealand</Vendor-Address-2>
+                            <Vendor-Telephone>+64 3 338 6701</Vendor-Telephone>
+                            <Vendor-Facsimile>+64 3 338 6704</Vendor-Facsimile>
+                            <Implementation-Title>${project.name}</Implementation-Title>
+                            <Implementation-Builder>${user.name}</Implementation-Builder>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Implementation-Revision>${buildNumber}</Implementation-Revision>
+                        </manifestEntries>
+                        <addMavenDescriptor>false</addMavenDescriptor>
+                    </archive>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>jar-monitor</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>monitor</classifier>
+                            <includes>
+                                <include>main/java/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+<!--                    <execution>-->
+<!--                        <id>jar-resources</id>-->
+<!--                        <phase>package</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>jar</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <classifier>resources</classifier>-->
+<!--                            <includes>-->
+<!--                                <include>etc/**</include>-->
+<!--                            </includes>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+                </executions>
+            </plugin>
+
+            <!-- Publish installer -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-artifacts</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>${project.build.directory}/Monitor-${project.version}.exe</file>
+                                    <type>exe</type>
+                                    <classifier>installer</classifier>
+                                </artifact>
+                                <artifact>
+                                    <file>${project.build.directory}/updates.xml</file>
+                                    <type>xml</type>
+                                    <classifier>updates</classifier>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+
         </plugins>
 
     </build>

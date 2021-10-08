@@ -1,3 +1,5 @@
+package main.java;
+
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Enumeration;

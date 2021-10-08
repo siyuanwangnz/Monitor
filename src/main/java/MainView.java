@@ -1,3 +1,5 @@
+package main.java;
+
 import javafx.scene.control.Tab;
 
 import javax.swing.*;
