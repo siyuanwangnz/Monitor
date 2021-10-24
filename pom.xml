@@ -9,12 +9,13 @@
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>7</maven.compiler.source>
-        <maven.compiler.target>7</maven.compiler.target>
-        <syft.deploy.dir>${project.build.directory}</syft.deploy.dir>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+<!--        <syft.deploy.dir>${project.build.directory}</syft.deploy.dir>-->
+<!--        <syft.deploy.dir>${project.basedir}</syft.deploy.dir>-->
         <!-- Build properties-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.compile.version>1.7</java.compile.version>
+        <java.compile.version>1.8</java.compile.version>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <timestamp>${maven.build.timestamp}</timestamp>
 
@@ -22,7 +23,6 @@
         <!-- Default build dirs -->
         <syft.jar.dir>${project.build.directory}/lib</syft.jar.dir><!-- Default build dirs -->
         <syft.deploy.dir>${project.build.directory}/build/deploy</syft.deploy.dir>
-        <syft.publish.lib.dir>c:/sde/syft/${project.artifactId}</syft.publish.lib.dir>
         <syft.keystore.name>${project.build.directory}/keystore</syft.keystore.name>
         <syft.keystore.storepass>password</syft.keystore.storepass>
         <syft.keystore.alias>syft</syft.keystore.alias>
@@ -320,9 +320,8 @@
 
     <repositories>
         <repository>
-            <id>syft-nexus</id>
-            <name>Syft Nexus</name>
-            <url>http://syft-sw-build:8081/repository/syft</url>
+            <id>syft-artifactory</id>
+            <url>https://syft.jfrog.io/syft/list/syft</url>
         </repository>
     </repositories>
 </project>
