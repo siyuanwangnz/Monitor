@@ -11,8 +11,6 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-<!--        <syft.deploy.dir>${project.build.directory}</syft.deploy.dir>-->
-<!--        <syft.deploy.dir>${project.basedir}</syft.deploy.dir>-->
         <!-- Build properties-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.compile.version>1.8</java.compile.version>
@@ -267,19 +265,6 @@
                             </includes>
                         </configuration>
                     </execution>
-<!--                    <execution>-->
-<!--                        <id>jar-resources</id>-->
-<!--                        <phase>package</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>jar</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <classifier>resources</classifier>-->
-<!--                            <includes>-->
-<!--                                <include>etc/**</include>-->
-<!--                            </includes>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
                 </executions>
             </plugin>
 
