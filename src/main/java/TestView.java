@@ -10,7 +10,7 @@ public class TestView extends JPanel {
         this.name = name;
         setName(this.name);
         setBorder(BorderFactory.createTitledBorder("Pressure Controller"));
-
+        System.loadLibrary("Dll1");
         add(panelCreation());
     }
 
@@ -19,8 +19,8 @@ public class TestView extends JPanel {
         Gbc gbc = new Gbc();
         gbc.insets = Gbc.INSET5;
 
-        panelMain.add(LineCreation("Prop1"),gbc.nextRow());
-        panelMain.add(LineCreation("Prop2"),gbc.nextRow());
+        panelMain.add(LineCreation("Prop1"), gbc.nextRow());
+        panelMain.add(LineCreation("Prop2"), gbc.nextRow());
 
 
         return panelMain;
@@ -29,7 +29,7 @@ public class TestView extends JPanel {
     private JPanel LineCreation(String name) {
         JPanel panel = new JPanel(new FlowLayout());
 
-        String tmp  = String.format( "%s%d", name ,0);
+        String tmp = String.format("%s%d", name, 0);
         panel.add(new JLabel(tmp + ": "));
 
         ButtonGroup buttonGroup = new ButtonGroup();
