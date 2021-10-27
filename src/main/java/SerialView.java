@@ -18,6 +18,8 @@ public class SerialView extends JPanel {
     private Listenable<String> listenable = new Listenable<>();
 
     public SerialView(String title) {
+        System.loadLibrary("Dll1");
+
         portCollection = new PortCollection();
 
         name = "Serial " + title;
