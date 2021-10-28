@@ -1,10 +1,8 @@
 package main.java;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.Timer;
-import java.util.TimerTask;
 
 public class PortCollection {
     private Port port;
@@ -13,7 +11,7 @@ public class PortCollection {
     public PortCollection() {
         port = Port.getInstance();
         java.util.Timer timer = new Timer();
-        timer.scheduleAtFixedRate(new PingerTask(), 500, 10000);
+        timer.scheduleAtFixedRate(new PingerTask(), 500, 5000);
 
     }
 
@@ -31,7 +29,7 @@ public class PortCollection {
         public void run() {
             synchronized (Port.class) {
                 DefaultListModel newList = new DefaultListModel();
-                ArrayList<String> list = port.findPort();
+                Set<String> list = port.findPort();
                 if (list != null || list.size() > 0) {
                     for (String com : list) {
                         newList.addElement(com);
@@ -53,13 +51,6 @@ public class PortCollection {
                     //
                     if (!newList.contains(obj)) {
                         portList.removeElement(obj);
-
-                        // Cope with port gone was the selected one
-                        //
-//                        if( obj.equals( selectedPortName )){
-//                            selectedDevice.close();
-//                            selectedDevice = null;
-//                        }
                     }
                 }
 

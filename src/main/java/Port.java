@@ -1,17 +1,37 @@
 package main.java;
 
-import gnu.io.*;
+import gnu.io.NRSerialPort;
+import gnu.io.PortInUseException;
+import gnu.io.SerialPortEvent;
+import gnu.io.SerialPortEventListener;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Enumeration;
+
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TooManyListenersException;
 
 public class Port {
     private Port() {
+//        java.util.Timer timer = new Timer();
+//        timer.scheduleAtFixedRate(new Port.PortListener(), 500, 5000);
+    }
 
+    class PortListener extends TimerTask {
+
+        @Override
+        public void run() {
+            synchronized (Port.class){
+                System.out.println("Port Listening ...");
+
+                if (serialPort != null && (!serialPort.isConnected())) {
+                    openPort(PortName, PortBaud);
+                }
+            }
+        }
     }
 
     private static volatile Port instance = null;
@@ -25,59 +45,39 @@ public class Port {
         return instance;
     }
 
-    private SerialPort serialPort;
+    private NRSerialPort serialPort;
+    private String PortName = "";
+    private int PortBaud = 0;
 
     //get current port name
     public String getPortName() {
-        return serialPort != null ? serialPort.getName() : "NULL COM CONNECT";
+        return serialPort != null ? serialPort.toString() : "NULL COM CONNECT";
     }
 
     //get port list
-    public final ArrayList<String> findPort() {
-        Enumeration<CommPortIdentifier> portList = CommPortIdentifier.getPortIdentifiers();
-
-        ArrayList<String> portNameList = new ArrayList<>();
-
-        while (portList.hasMoreElements()) {
-            String portName = portList.nextElement().getName();
-            portNameList.add(portName);
-        }
-
-        return portNameList;
+    public final Set<String> findPort() {
+        return NRSerialPort.getAvailableSerialPorts();
     }
 
     //open
     public final void openPort(String portName, int baudrate) {
 
         try {
-            CommPortIdentifier portIdentifier = CommPortIdentifier.getPortIdentifier(portName);
+            PortName = portName;
+            PortBaud = baudrate;
 
-            CommPort commPort = null;
-            try {
-                commPort = portIdentifier.open(portName, 2000);
-            } catch (PortInUseException e) {
-                e.printStackTrace();
-            }
+            serialPort = new NRSerialPort(portName, baudrate);
+            serialPort.connect();
 
-            if (commPort instanceof SerialPort) {
-
-                serialPort = (SerialPort) commPort;
-
-                try {
-                    serialPort.setSerialPortParams(baudrate, SerialPort.DATABITS_8, SerialPort.STOPBITS_1, SerialPort.PARITY_NONE);
-                } catch (UnsupportedCommOperationException e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (NoSuchPortException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("+++" + e + "+++");
         }
     }
 
     //close
     public void closePort() {
         if (serialPort != null) {
-            serialPort.close();
+            serialPort.disconnect();
             serialPort = null;
         }
     }
@@ -87,21 +87,20 @@ public class Port {
         if (serialPort == null) {
             return;
         }
-        OutputStream out = null;
-
+        DataOutputStream out = null;
         try {
-
-            out = serialPort.getOutputStream();
+            out = new DataOutputStream(serialPort.getOutputStream());
+            ;
             out.write(order);
             out.flush();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("***" + e + "***");
+            serialPort.disconnect();
         } finally {
             try {
                 if (out != null) {
                     out.close();
-                    out = null;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -111,15 +110,15 @@ public class Port {
 
     //read
     public byte[] readFromPort() {
-        InputStream in = null;
         byte[] bytes = null;
+        DataInputStream in = null;
         if (serialPort == null) {
             return bytes;
         }
 
         try {
 
-            in = serialPort.getInputStream();
+            in = new DataInputStream(serialPort.getInputStream());
             int bufflenth = in.available();
 
             while (bufflenth != 0) {
@@ -129,11 +128,11 @@ public class Port {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            serialPort.disconnect();
         } finally {
             try {
                 if (in != null) {
                     in.close();
-                    in = null;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -150,7 +149,6 @@ public class Port {
         try {
             serialPort.addEventListener(new SerialListener(availableListener));
             serialPort.notifyOnDataAvailable(true);
-            serialPort.notifyOnBreakInterrupt(true);
 
         } catch (TooManyListenersException e) {
             e.printStackTrace();
@@ -158,18 +156,19 @@ public class Port {
     }
 
     private class SerialListener implements SerialPortEventListener {
-
         private DataAvailableListener availableListener;
 
         public SerialListener(DataAvailableListener availableListener) {
             this.availableListener = availableListener;
         }
 
+        @Override
         public void serialEvent(SerialPortEvent serialPortEvent) {
-
             switch (serialPortEvent.getEventType()) {
 
                 case SerialPortEvent.BI:
+                    System.out.println("Break");
+                    break;
 
                 case SerialPortEvent.OE:
 
@@ -195,7 +194,9 @@ public class Port {
                     break;
             }
         }
+
     }
+
 
     public interface DataAvailableListener {
         void dataAvailable();

@@ -58,9 +58,7 @@ public class SerialView extends JPanel {
     private void refreshComDisplay() {
         west.removeAll();
         buildWest();
-        add(north, BorderLayout.NORTH);
         add(west, BorderLayout.WEST);
-        add(centre, BorderLayout.CENTER);
     }
 
     private JPanel buildNorth() {
@@ -190,7 +188,7 @@ public class SerialView extends JPanel {
 
 
         tabView.addView(buildTab("Send 1"));
-        tabView.tabConfig(Panel, 0, 0, 500, 70);
+        tabView.tabConfig(Panel, 0, 0, 495, 65);
 
         return Panel;
     }

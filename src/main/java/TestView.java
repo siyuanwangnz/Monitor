@@ -10,7 +10,6 @@ public class TestView extends JPanel {
         this.name = name;
         setName(this.name);
         setBorder(BorderFactory.createTitledBorder("Pressure Controller"));
-        System.loadLibrary("Dll1");
         add(panelCreation());
     }
 
